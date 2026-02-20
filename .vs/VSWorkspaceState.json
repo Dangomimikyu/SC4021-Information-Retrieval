@@ -1,7 +1,9 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\src",
+    "\\src\\testing"
   ],
-  "SelectedNode": "\\C:\\Users\\s0801\\Source\\Repos\\SC4021-Information-Retrieval",
+  "SelectedNode": "\\src\\testing\\praw_test.py",
   "PreviewInSolutionExplorer": false
 }
