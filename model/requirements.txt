@@ -1,0 +1,30 @@
+# ML Libraries
+torch>=2.0.0
+transformers>=4.35.0
+sentence-transformers>=2.2.2
+
+# Sentiment Analysis
+vaderSentiment>=3.3.2
+textblob>=0.17.1
+
+#NLP
+spacy>=3.7.0
+nltk>=3.8.1
+
+#Topic Modelling
+bertopic>=0.16.0
+umap-learn>=0.5.5
+hdbscan>=0.8.33
+
+#Data Processing
+pandas>=2.0.0
+numpy>=1.24.0
+
+#API
+fastapi>=0.104.0
+uvicorn>=0.24.0
+elasticsearch>=8.11.0
+redis>=5.0.0
+
+#Monitoring
+prometheus-client>=0.19.0
