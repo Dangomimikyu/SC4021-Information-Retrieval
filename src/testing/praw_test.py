@@ -5,9 +5,10 @@ import praw as pp
 # reddit made a new policy that only allows one OAuth key or app per account, so te 4021-30 account can only have 1 app
 
 # current app is an 'installed app' type, should ask denis if can delete and create a script app instead
-reddit = pp.Reddit( client_id = "",
-                    client_secret = "",
-                    user_agent = "")
+reddit = pp.Reddit( client_id = "s0Epgs8jsHkNKzsFGCnw-w",
+                    client_secret = None,
+                    redirect_uri="http://localhost:8080",
+                    user_agent = "python:school_project:v1.0.0 (by u/4021-30)")
 
 # test that it's working, get the 10 latest posts and their comments in r/soccer
 for submission in reddit.subreddit("soccer").new(limit=10):
