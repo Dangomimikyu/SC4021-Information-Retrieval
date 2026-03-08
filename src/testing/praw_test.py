@@ -38,8 +38,9 @@ subreddits = [
     "ACMilan",
 ]
 
-# test that it's working, get the 10 latest posts and their comments in r/soccer
-for submission in reddit.subreddit("soccer").new(limit=10):
+"""
+# test that it's working, get the 3 latest posts and their comments in r/soccer
+for submission in reddit.subreddit("soccer").new(limit=3):
     top_level_comments = list(submission.comments)
     all_comments = submission.comments.list()
     print("[\nsubmission info:\n" +
@@ -47,22 +48,27 @@ for submission in reddit.subreddit("soccer").new(limit=10):
           " |upvote ratio: " + str(submission.upvote_ratio) + "\n" +
           " |author      : " + str(submission.author.name) + "\n" +
           " |author flair: " + str(submission.author_flair_text) + "\n" +
+          " |subreddit   : " + str(submission.subreddit.display_name) + "\n" +
           " |title       : " + submission.title + "\n]")
-    
+"""
+
 # send the collected data into a csv, can use for classification in the classification.ipynb file
 dfRows = []
-for submission in reddit.subreddit("soccer").new(limit=10):
-    tempRow = {
-        "author": str(submission.author),
-        "author_flair": submission.author_flair_text,
-        "title": submission.title,
-        "post_id": submission.id,
-        "upvotes": submission.score,
-        "upvote_ratio": submission.upvote_ratio,
-        "num_comments": submission.num_comments,
-        "subreddit" : submission.subreddit.name
-    }
-    dfRows.append(tempRow)
+for sub in subreddits:
+    for submission in reddit.subreddit(sub).new(limit=20):
+        tempRow = {
+            "author": str(submission.author),
+            "author_flair": submission.author_flair_text,
+            "title": submission.title,
+            "post_id": submission.id,
+            "upvotes": submission.score,
+            "upvote_ratio": submission.upvote_ratio,
+            "num_comments": submission.num_comments,
+            "subreddit" : submission.subreddit.display_name
+        }
+        dfRows.append(tempRow)
 
 df = pd.DataFrame(dfRows)
 print(df)
+
+df.to_csv("reddit-scrape-data/temp.csv", index = False)
