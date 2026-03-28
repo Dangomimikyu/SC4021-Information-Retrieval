@@ -14,6 +14,7 @@ interface AdvancedFiltersProps {
   commentType: string;
   onCommentTypeChange: (value: string) => void;
   teams: string[];
+  subreddits: string[]; // Danh sách subreddit động từ file JSON
 }
 
 export function AdvancedFilters({
@@ -30,11 +31,12 @@ export function AdvancedFilters({
   commentType,
   onCommentTypeChange,
   teams,
+  subreddits,
 }: AdvancedFiltersProps) {
   return (
     <div className="w-full max-w-3xl mx-auto mt-4 bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Left Column */}
+        {/* Cột bên trái: Cảm xúc, Ngày tháng, Đội bóng */}
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -63,7 +65,6 @@ export function AdvancedFilters({
                   type="date"
                   value={startDate}
                   onChange={(e) => onStartDateChange(e.target.value)}
-                  placeholder="Select start date"
                   className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black text-gray-600"
                 />
               </div>
@@ -73,7 +74,6 @@ export function AdvancedFilters({
                   type="date"
                   value={endDate}
                   onChange={(e) => onEndDateChange(e.target.value)}
-                  placeholder="Select end date"
                   className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black text-gray-600"
                 />
               </div>
@@ -99,22 +99,22 @@ export function AdvancedFilters({
           </div>
         </div>
 
-        {/* Right Column */}
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Source
+              Source (Subreddit)
             </label>
             <select
               value={source}
               onChange={(e) => onSourceChange(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black text-gray-600"
             >
-              <option value="">Choose source</option>
-              <option value="twitter">Twitter</option>
-              <option value="reddit">Reddit</option>
-              <option value="facebook">Facebook</option>
-              <option value="instagram">Instagram</option>
+              <option value="">Choose subreddit</option>
+              {subreddits.map((sub) => (
+                <option key={sub} value={sub}>
+                  {sub}
+                </option>
+              ))}
             </select>
           </div>
 

@@ -35,7 +35,7 @@ export function SearchBar({
         <button
           type="button"
           onClick={onToggleAdvanced}
-          className={`px-4 py-3 border rounded-lg flex items-center gap-2 transition-colors ${
+          className={`px-4 py-3 border rounded-lg flex items-center gap-2 transition-colors cursor-pointer <${
             showAdvanced
               ? 'bg-gray-100 border-gray-400'
               : 'bg-white border-gray-300 hover:bg-gray-50'
@@ -46,7 +46,7 @@ export function SearchBar({
         </button>
         <button
           type="submit"
-          className="px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
+          className="px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors cursor-pointer"
         >
           Search
         </button>

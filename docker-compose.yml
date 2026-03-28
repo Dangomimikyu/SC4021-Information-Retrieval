@@ -1,0 +1,60 @@
+services:
+  solr:
+    image: solr:9-slim
+    container_name: football-search-engine
+    ports:
+      - '8983:8983'
+    volumes:
+      - ./indexing/build/solr_config:/opt/solr/server/solr/configsets/football_conf
+    command:
+      - solr-precreate
+      - football_core
+      - /opt/solr/server/solr/configsets/football_conf
+
+  solr-indexer:
+    image: curlimages/curl:latest
+    container_name: football-indexer
+    depends_on:
+      - solr
+    volumes:
+      - ./indexing/dataset:/data
+    entrypoint:
+      - sh
+      - -c
+      - |
+        echo "⏳ Waiting for Solr..."
+        until curl -s "http://solr:8983/solr/admin/cores?action=STATUS" | grep -q '"football_core"'; do
+          sleep 5
+        done
+        curl -H "Content-Type: application/json" --data-binary "@/data/football_index.json" "http://solr:8983/solr/football_core/update?commit=true"
+        echo "✅ Indexing Done!"
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: build/Dockerfile 
+    container_name: football-backend
+    ports:
+      - '8000:8000'
+    environment:
+      - NODE_ENV=production
+      - SOLR_URL=http://solr:8983/solr/football_core/select
+    depends_on:
+      - solr
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: build/Dockerfile
+    container_name: football-frontend
+    ports:
+      - "5173:5173"
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:8000/search
+    depends_on:
+      - backend
