@@ -39,3 +39,6 @@ Make sure you have **Docker Desktop** installed on your system:
 ```bash
 git clone [https://github.com/Dangomimikyu/SC4021-Information-Retrieval.git](https://github.com/Dangomimikyu/SC4021-Information-Retrieval.git)
 
+2. **Navigate to the project directory**
+```bashcd SC4021-Information-Retrieval
+
