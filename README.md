@@ -38,7 +38,11 @@ Make sure you have **Docker Desktop** installed on your system:
 1. **Clone the repository**
 ```bash
 git clone [https://github.com/Dangomimikyu/SC4021-Information-Retrieval.git](https://github.com/Dangomimikyu/SC4021-Information-Retrieval.git)
-
+```
 2. **Navigate to the project directory**
 ```bashcd SC4021-Information-Retrieval
+```
+3. **Build and run the containers**
+```
+docker-compose up --build
 
