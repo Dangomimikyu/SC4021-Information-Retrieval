@@ -72,11 +72,6 @@ class DeBERTaABSA:
         return results
 
     def analyze_batch(self, records: List[Dict]) -> List[Dict]:
-        """
-        
-        Runs analyze() on each record and stores the result in 'absa_results'.
-
-        """
         for record in records:
             record["absa_results"] = self.analyze(
                 text=record["text"],
