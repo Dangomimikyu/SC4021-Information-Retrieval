@@ -7,6 +7,11 @@ from data_processor import DataProcessor
 from bert_sentiment import BertSentimentAnalyzer
 from vader_sentiment import VADERAnalyzer
 from goemotions_classifier import GoEmotionsClassifier
+try:
+    from deberta_absa import DeBERTaABSA
+    _ABSA_AVAILABLE = True
+except ImportError:
+    _ABSA_AVAILABLE = False
 
 class OpinionSearchPipeline:
     """Complete pipeline for processing Reddit comments into searchable opinions."""
@@ -29,7 +34,14 @@ class OpinionSearchPipeline:
         # Topic modeling
         self.sentence_model = SentenceTransformer('all-MiniLM-L6-v2')
         self.topic_model = None
-        
+
+        # ABSA (aspect-based sentiment analysis)
+        if _ABSA_AVAILABLE:
+            self.absa = DeBERTaABSA()
+        else:
+            self.absa = None
+            print("Warning: deberta_absa.py not found. ABSA step will be skipped.")
+
         print("Pipeline initialized successfully!")
     
     def extract_entities(self, texts: List[str]) -> List[Dict]:
@@ -94,7 +106,7 @@ class OpinionSearchPipeline:
         print(f"{'='*60}")
         
         # Step 1: Load and preprocess data
-        print("\n[1/6] Loading and preprocessing data...")
+        print("\n[1/7] Loading and preprocessing data...")
         raw_data = self.data_processor.load_json(json_path)
         df = self.data_processor.process_posts(raw_data)
         print(f"   ✓ Processed {len(df)} comments")
@@ -106,7 +118,7 @@ class OpinionSearchPipeline:
         texts = df['text'].tolist()
         
         # Step 2: BERT sentiment analysis
-        print("\n[2/6] Running BERT sentiment analysis...")
+        print("\n[2/7] Running BERT sentiment analysis...")
         bert_results = self.bert_analyzer.predict(texts, batch_size=32)
         df['bert_sentiment'] = [r['sentiment'] for r in bert_results]
         df['bert_confidence'] = [r['confidence'] for r in bert_results]
@@ -114,7 +126,7 @@ class OpinionSearchPipeline:
         print(f"   ✓ Analyzed {len(bert_results)} comments")
         
         # Step 3: VADER sentiment analysis
-        print("\n[3/6] Running VADER sentiment analysis...")
+        print("\n[3/7] Running VADER sentiment analysis...")
         vader_results = self.vader_analyzer.analyze(texts)
         df['vader_sentiment'] = [r['sentiment'] for r in vader_results]
         df['vader_compound'] = [r['compound'] for r in vader_results]
@@ -122,22 +134,41 @@ class OpinionSearchPipeline:
         print(f"   ✓ Analyzed {len(vader_results)} comments")
         
         # Step 4: Emotion classification
-        print("\n[4/6] Running emotion classification...")
+        print("\n[4/7] Running emotion classification...")
         emotion_results = self.emotion_classifier.predict(texts, top_k=3)
         df['primary_emotion'] = [r['primary_emotion'] for r in emotion_results]
         df['emotions'] = [r['emotions'] for r in emotion_results]
         print(f"   ✓ Classified {len(emotion_results)} comments")
         
         # Step 5: Entity extraction
-        print("\n[5/6] Extracting named entities...")
+        print("\n[5/7] Extracting named entities...")
         entity_results = self.extract_entities(texts)
         df['entities'] = entity_results
         df['mentioned_players'] = [e['persons'] for e in entity_results]
         df['mentioned_teams'] = [e['orgs'] for e in entity_results]
         print(f"   ✓ Extracted entities from {len(entity_results)} comments")
         
-        # Step 6: Topic modeling
-        print("\n[6/6] Discovering topics...")
+        # Step 6: Aspect-based sentiment analysis (ABSA)
+        print("\n[6/7] Running aspect-based sentiment analysis (ABSA)...")
+        if self.absa is not None:
+            # use 'is_sarcastic' column from sarcasm detector if present,
+            # otherwise default to False for every comment.
+            sarcasm_flags = df['is_sarcastic'].infer_objects(copy=False).fillna(False).tolist() if 'is_sarcastic' in df.columns else [False] * len(df)
+
+            absa_results = []
+            for text, entities, is_sarcastic in zip(texts, entity_results, sarcasm_flags):
+                aspects = entities['persons'] + entities['orgs']
+                absa_results.append(
+                    self.absa.analyze(text, aspects, is_sarcastic=bool(is_sarcastic))
+                )
+            df['absa_results'] = absa_results
+            print(f"   ✓ ABSA completed for {len(absa_results)} comments")
+        else:
+            df['absa_results'] = [{}] * len(df)
+            print("   - ABSA skipped (module not available)")
+
+        # Step 7: Topic modeling
+        print("\n[7/7] Discovering topics...")
         topic_results = self.analyze_topics(texts, n_topics=10)
         df['topic'] = topic_results['topics']
         df['topic_probability'] = topic_results['probabilities']
