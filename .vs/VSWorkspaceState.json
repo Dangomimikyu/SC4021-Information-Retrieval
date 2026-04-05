@@ -1,6 +1,9 @@
 {
   "ExpandedNodes": [
     "",
+    "\\indexing",
+    "\\indexing\\dataset",
+    "\\indexing\\scripts",
     "\\src",
     "\\src\\testing"
   ],
