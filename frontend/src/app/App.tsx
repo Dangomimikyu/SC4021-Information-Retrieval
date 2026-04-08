@@ -33,7 +33,6 @@ export default function App() {
   const [source, setSource] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [team, setTeam] = useState('');
   const [commentType, setCommentType] = useState('');
 
   // --- Data & API State ---
@@ -58,7 +57,6 @@ export default function App() {
         body: JSON.stringify({
           query: queryOverride || searchQuery,
           sentiment: sentiment || null,
-          team: team || null,
           source: source || null,
           start_date: startDate || null,
           end_date: endDate || null,
@@ -164,7 +162,6 @@ export default function App() {
           {/* Advanced Filter Dropdowns */}
           {showAdvanced && (
             <AdvancedFilters
-              teams={filterData.teams}
               subreddits={filterData.subreddits}
               sentiment={sentiment}
               onSentimentChange={setSentiment}
@@ -174,8 +171,6 @@ export default function App() {
               onStartDateChange={setStartDate}
               endDate={endDate}
               onEndDateChange={setEndDate}
-              team={team}
-              onTeamChange={setTeam}
               commentType={commentType}
               onCommentTypeChange={setCommentType}
             />

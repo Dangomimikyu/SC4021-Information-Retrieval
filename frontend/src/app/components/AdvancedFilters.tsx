@@ -9,11 +9,8 @@ interface AdvancedFiltersProps {
   onStartDateChange: (value: string) => void;
   endDate: string;
   onEndDateChange: (value: string) => void;
-  team: string;
-  onTeamChange: (value: string) => void;
   commentType: string;
   onCommentTypeChange: (value: string) => void;
-  teams: string[];
   subreddits: string[]; // Danh sách subreddit động từ file JSON
 }
 
@@ -26,11 +23,8 @@ export function AdvancedFilters({
   onStartDateChange,
   endDate,
   onEndDateChange,
-  team,
-  onTeamChange,
   commentType,
   onCommentTypeChange,
-  teams,
   subreddits,
 }: AdvancedFiltersProps) {
   return (
@@ -78,24 +72,6 @@ export function AdvancedFilters({
                 />
               </div>
             </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Teams
-            </label>
-            <select
-              value={team}
-              onChange={(e) => onTeamChange(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black text-gray-600"
-            >
-              <option value="">Select team</option>
-              {teams.map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
-              ))}
-            </select>
           </div>
         </div>
 

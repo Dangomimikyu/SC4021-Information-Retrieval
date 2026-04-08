@@ -54,7 +54,7 @@ const parseComments = (raw: string): string[] => {
 
 app.post('/search', async (req: Request, res: Response) => {
     try {
-        const { query, team, source, start_date, end_date } = req.body;
+        const { query, source, start_date, end_date } = req.body;
 
         // TARGETED SEARCH: Title, Content, Author, Subreddit
         let q = '*:*';
@@ -62,20 +62,17 @@ app.post('/search', async (req: Request, res: Response) => {
             q = `(title:("${query}") OR content:("${query}") OR author:("${query}") OR subreddit:("${query}"))`;
         }
 
-        const params: any = {
-            q: q,
-            wt: 'json',
-            rows: 50,
-            sort: 'num_comments desc', // Rank by discussion volume
-            fq: [] as string[]
-        };
+        const params = new URLSearchParams();
+        params.append('q', q);
+        params.append('wt', 'json');
+        params.append('rows', '50');
+        params.append('sort', 'num_comments desc'); // Rank by discussion volume
 
-        if (team) params.fq.push(`author_flair:"${team}"`);
-        if (source) params.fq.push(`subreddit:"${source}"`);
+        if (source) params.append('fq', `subreddit:"${source}"`);
         if (start_date || end_date) {
             const start = start_date ? `${start_date}T00:00:00Z` : '*';
             const end = end_date ? `${end_date}T23:59:59Z` : '*';
-            params.fq.push(`datetime:[${start} TO ${end}]`);
+            params.append('fq', `datetime:[${start} TO ${end}]`);
         }
 
         const solrResponse: any = await axios.get(SOLR_URL, { params });
@@ -143,6 +140,8 @@ app.post('/search', async (req: Request, res: Response) => {
                 nestedComments: nestedComments 
             };
         });
+        
+        console.log("SENDING POSTS:", JSON.stringify(posts.map((p: any) => ({ id: p.id, numComments: p.nestedComments.length })).slice(0, 5)));
         // ----------------------------------
 
         res.json({ posts: posts, recordCount: solrResponse.data.response.numFound });

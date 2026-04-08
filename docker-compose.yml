@@ -28,3 +28,21 @@ services:
         done
         curl -H "Content-Type: application/json" --data-binary "@/data/football_index_scored.json" "http://solr:8983/solr/football_core/update?commit=true"
         echo "✅ Indexing Done!"
+
+  backend:
+    build: ./backend
+    container_name: football-backend
+    ports:
+      - '8000:8000'
+    depends_on:
+      - solr
+    environment:
+      - SOLR_URL=http://solr:8983/solr/football_core/select
+
+  frontend:
+    build: ./frontend
+    container_name: football-frontend
+    ports:
+      - '5173:5173'
+    depends_on:
+      - backend

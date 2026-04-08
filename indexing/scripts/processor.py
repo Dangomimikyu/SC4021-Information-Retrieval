@@ -10,7 +10,7 @@ def process_football_data():
     
 
     if not os.path.exists(input_file):
-        print(f"Lỗi: Không tìm thấy file tại {input_file}")
+        print(f"Error! Don;t find the file in {input_file}")
         return
 
     df = pd.read_csv(input_file)
@@ -37,7 +37,7 @@ def process_football_data():
     with open(output_path, 'w', encoding='utf-8') as f:
         json.dump(filter_data, f, indent=2, ensure_ascii=False)
         
-    print(f"Thành công! File JSON đã được tạo tại: {output_path}")
+    print(f"Succeed! File JSON created in: {output_path}")
 
 
 process_football_data()
