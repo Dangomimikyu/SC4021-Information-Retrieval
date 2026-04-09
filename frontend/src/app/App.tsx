@@ -6,7 +6,6 @@ import { ResultsPanel } from './components/ResultsPanel';
 import { StatsModal } from './components/StatsModal';
 import { TopBar } from './components/TopBar';
 import { PreferencesMenu } from './components/PreferencesMenu';
-// Import the RedditPost interface defined in your CommentCard
 import { RedditPost } from './components/CommentCard';
 
 import filterData from '../dataset/filter_options.json';
@@ -20,7 +19,6 @@ const suggestions = [
 ];
 
 export default function App() {
-  // --- UI & Navigation State ---
   const [searchQuery, setSearchQuery] = useState('');
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [showStats, setShowStats] = useState(false);
@@ -28,23 +26,20 @@ export default function App() {
   const [showPreferences, setShowPreferences] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('system');
 
-  // --- Advanced Filter States ---
   const [sentiment, setSentiment] = useState('');
   const [source, setSource] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [commentType, setCommentType] = useState('');
+  
+  // NEW: ABSA Filter States
+  const [aspect, setAspect] = useState('');
+  const [aspectSentiment, setAspectSentiment] = useState('');
 
-  // --- Data & API State ---
-  // We now store an array of "RedditPost" objects instead of flat comments
   const [posts, setPosts] = useState<RedditPost[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  /**
-   * Fetches search results from the Node.js backend.
-   * Sends user query and all active filters in a POST request.
-   */
   const fetchPostsFromBackend = async (queryOverride?: string) => {
     setIsLoading(true);
     setError(null);
@@ -61,14 +56,14 @@ export default function App() {
           start_date: startDate || null,
           end_date: endDate || null,
           comment_type: commentType || null,
+          aspect: aspect || null,
+          aspect_sentiment: aspectSentiment || null,
         }),
       });
 
       if (!response.ok) throw new Error('Failed to connect to backend server');
       
       const data = await response.json();
-      
-      // Update state with the posts returned from Solr/Backend
       setPosts(data.posts || []); 
     } catch (err: any) {
       setError(err.message);
@@ -78,10 +73,6 @@ export default function App() {
     }
   };
 
-  /**
-   * Effect to handle Theme Switching (Dark/Light Mode).
-   * Modifies the document root class for Tailwind CSS support.
-   */
   useEffect(() => {
     const root = document.documentElement;
     if (theme === 'dark') {
@@ -89,46 +80,35 @@ export default function App() {
     } else if (theme === 'light') {
       root.classList.remove('dark');
     } else {
-      // System default theme logic
       const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       if (isDark) root.classList.add('dark');
       else root.classList.remove('dark');
     }
   }, [theme]);
 
-  /**
-   * Memoized calculation of total sentiment distribution.
-   * This iterates through every post and sums up the sentiment of all nested comments.
-   */
   const sentimentCounts = useMemo(() => {
     const counts = { positive: 0, negative: 0, neutral: 0 };
-    
     posts.forEach(post => {
-      // Check each comment inside the post to update global stats
       post.nestedComments.forEach(comment => {
         if (counts[comment.sentiment] !== undefined) {
           counts[comment.sentiment]++;
         }
       });
     });
-    
     return counts;
   }, [posts]);
 
-  // --- Event Handlers ---
   const handleSearch = () => fetchPostsFromBackend();
 
   const handleSuggestionClick = (suggestion: string) => {
     setSearchQuery(suggestion);
-    fetchPostsFromBackend(suggestion); // Execute search immediately on click
+    fetchPostsFromBackend(suggestion);
   };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
-      {/* Top Navigation Bar */}
       <TopBar onPreferencesClick={() => setShowPreferences(!showPreferences)} theme={theme} />
       
-      {/* User Preferences Popup */}
       <PreferencesMenu
         isOpen={showPreferences}
         onClose={() => setShowPreferences(false)}
@@ -136,7 +116,6 @@ export default function App() {
         onThemeChange={setTheme}
       />
 
-      {/* Main Search Section */}
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 transition-colors">
         <div className="max-w-7xl mx-auto px-4 py-12">
           <h1 className="text-4xl font-bold text-center mb-8 text-gray-900 dark:text-white">
@@ -151,7 +130,6 @@ export default function App() {
             onSearch={handleSearch}
           />
 
-          {/* Quick Suggestions (Hidden after first search) */}
           {!hasSearched && (
             <SuggestionPills
               suggestions={suggestions}
@@ -159,7 +137,6 @@ export default function App() {
             />
           )}
 
-          {/* Advanced Filter Dropdowns */}
           {showAdvanced && (
             <AdvancedFilters
               subreddits={filterData.subreddits}
@@ -173,12 +150,15 @@ export default function App() {
               onEndDateChange={setEndDate}
               commentType={commentType}
               onCommentTypeChange={setCommentType}
+              aspect={aspect}
+              onAspectChange={setAspect}
+              aspectSentiment={aspectSentiment}
+              onAspectSentimentChange={setAspectSentiment}
             />
           )}
         </div>
       </div>
 
-      {/* Results Display Area */}
       {hasSearched && (
         <div className="max-w-7xl mx-auto px-4 py-8">
           {isLoading ? (
@@ -191,7 +171,7 @@ export default function App() {
             </div>
           ) : (
             <ResultsPanel
-              posts={posts} // Pass the list of Reddit posts
+              posts={posts} 
               searchQuery={searchQuery}
               showStats={showStats}
               onToggleStats={() => setShowStats(!showStats)}
@@ -200,14 +180,12 @@ export default function App() {
         </div>
       )}
 
-      {/* Global Statistics Charts Modal */}
       <StatsModal
         isOpen={showStats}
         onClose={() => setShowStats(false)}
         sentimentCounts={sentimentCounts}
-        // totalComments is still needed for the UI summary boxes
         totalComments={posts.reduce((sum, p) => sum + p.nestedComments.length, 0)}
-        totalResults={posts.length} // Number of unique Reddit posts found
+        totalResults={posts.length} 
       />
     </div>
   );
