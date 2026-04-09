@@ -19,6 +19,8 @@ def index_data():
         
         # Uploading to Solr
         print(f"🚀 Starting indexing to Solr at {solr_url}...")
+        print("🧹 Clearing old indexing data to avoid conflicts...")
+        solr.delete(q='*:*')
         solr.add(data)
         print("✨ Indexing complete! All data has been sent to Docker Solr.")
 
