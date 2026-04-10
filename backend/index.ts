@@ -1,5 +1,4 @@
 import express, { Request, Response } from 'express';
-import fetch from 'node-fetch';
 import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -40,6 +39,11 @@ app.post('/search', async (req: Request, res: Response) => {
         params.append('wt', 'json');
         params.append('rows', '200'); 
         params.append('sort', 'num_comments desc');
+        if (query) {
+            params.append('spellcheck', 'true');
+            params.append('spellcheck.q', query);
+            params.append('spellcheck.collate', 'true');
+        }
 
         if (source) params.append('fq', `subreddit:"${source}"`);
         if (start_date || end_date) {
@@ -114,31 +118,16 @@ app.post('/search', async (req: Request, res: Response) => {
             posts = posts.filter((p: any) => p.nestedComments.length > 0);
         }
 
-        res.json({ posts: posts.slice(0, 50), recordCount: posts.length });
+        res.json({ 
+            posts: posts.slice(0, 50), 
+            recordCount: posts.length,
+            spellcheck: solrResponse.data.spellcheck 
+        });
 
     } catch (error: any) {
         console.error("Backend Error:", error?.response?.data?.error?.msg || error.message);
         res.status(500).json({ error: "Search failed" });
     }
-});
-
-app.get("/api/search", async (req, res) => {
-  const query = req.query.q;
-
-  try {
-    const solrRes = await fetch(
-      `http://localhost:8983/solr/football_core/select?q=${query}&spellcheck=true&spellcheck.q=${query}&wt=json`
-    );
-
-    const data = await solrRes.json();
-
-    res.json({
-      results: data.response.docs,
-      spellcheck: data.spellcheck
-    });
-  } catch (err) {
-    res.status(500).json({ error: "Search failed" });
-  }
 });
 
 app.listen(port, () => console.log(`Backend running on port ${port}`));

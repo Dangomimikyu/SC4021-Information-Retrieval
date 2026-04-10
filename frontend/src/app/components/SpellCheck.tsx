@@ -1,53 +1,23 @@
-import { useState } from "react";
-import { SearchBar } from "./SearchBar";
+import React from 'react';
 
-export default function SearchPage() {
-  const [query, setQuery] = useState("");
-  const [results, setResults] = useState([]);
-  const [suggestion, setSuggestion] = useState("");
+interface SpellCheckProps {
+  suggestion: string;
+  onClickSuggestion: (suggestion: string) => void;
+}
 
-  const handleSearch = async () => {
-    const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
-    const data = await res.json();
-
-    setResults(data.results);
-
-    // Extract spellcheck suggestion
-    const collations = data.spellcheck?.collations;
-    if (collations && collations.length > 1) {
-      setSuggestion(collations[1]);
-    } else {
-      setSuggestion("");
-    }
-  };
-
+export function SpellCheck({ suggestion, onClickSuggestion }: SpellCheckProps) {
+  if (!suggestion) return null;
   return (
-    <div>
-      <SearchBar
-        searchQuery={query}
-        onSearchChange={setQuery}
-        showAdvanced={false}
-        onToggleAdvanced={() => {}}
-        onSearch={handleSearch}
-      />
-
-        {suggestion && (
-        <p>
-            Did you mean:{" "}
-            <button onClick={() => {
-            setQuery(suggestion);
-            handleSearch();
-            }}>
-            <b>{suggestion}</b>
-            </button>
-        </p>
-        )}
-
-      <ul>
-        {results.map((r: any, i) => (
-          <li key={i}>{r.title}</li>
-        ))}
-      </ul>
+    <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-900 text-center">
+      <p className="text-blue-800 dark:text-blue-200">
+        Did you mean:{" "}
+        <button 
+          onClick={() => onClickSuggestion(suggestion)}
+          className="font-bold hover:underline cursor-pointer ml-1"
+        >
+          {suggestion}
+        </button>
+      </p>
     </div>
   );
 }
