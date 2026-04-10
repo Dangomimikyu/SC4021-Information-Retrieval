@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { SearchBar } from './components/SearchBar';
+import { SpellCheck } from './components/SpellCheck';
 import { SuggestionPills } from './components/SuggestionPills';
 import { AdvancedFilters } from './components/AdvancedFilters';
 import { ResultsPanel } from './components/ResultsPanel';
@@ -25,6 +26,8 @@ export default function App() {
   const [hasSearched, setHasSearched] = useState(false);
   const [showPreferences, setShowPreferences] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('system');
+
+  const [suggestion, setSuggestion] = useState('');
 
   const [sentiment, setSentiment] = useState('');
   const [source, setSource] = useState('');
@@ -64,7 +67,20 @@ export default function App() {
       if (!response.ok) throw new Error('Failed to connect to backend server');
       
       const data = await response.json();
-      setPosts(data.posts || []); 
+      setPosts(data.posts || []);
+      
+      let suggestionText = '';
+      const collations = data.spellcheck?.collations;
+
+      if (Array.isArray(collations)) {
+        for (let i = 0; i < collations.length; i++) {
+          if (typeof collations[i] === 'string' && collations[i] !== 'collation') {
+            suggestionText = collations[i];
+            break;
+          }
+        }
+      }
+      setSuggestion(suggestionText);
     } catch (err: any) {
       setError(err.message);
       setPosts([]);
@@ -170,12 +186,24 @@ export default function App() {
               Error: {error}
             </div>
           ) : (
-            <ResultsPanel
-              posts={posts} 
-              searchQuery={searchQuery}
-              showStats={showStats}
-              onToggleStats={() => setShowStats(!showStats)}
-            />
+            <>
+              {suggestion && (
+                <SpellCheck
+                  suggestion={suggestion}
+                  onClickSuggestion={(s) => {
+                    setSearchQuery(s);
+                    fetchPostsFromBackend(s);
+                  }}
+                />
+              )}
+
+              <ResultsPanel
+                posts={posts}
+                searchQuery={searchQuery}
+                showStats={showStats}
+                onToggleStats={() => setShowStats(!showStats)}
+              />
+            </>
           )}
         </div>
       )}
