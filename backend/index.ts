@@ -1,4 +1,5 @@
 import express, { Request, Response } from 'express';
+import fetch from 'node-fetch';
 import dotenv from "dotenv";
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -119,6 +120,25 @@ app.post('/search', async (req: Request, res: Response) => {
         console.error("Backend Error:", error?.response?.data?.error?.msg || error.message);
         res.status(500).json({ error: "Search failed" });
     }
+});
+
+app.get("/api/search", async (req, res) => {
+  const query = req.query.q;
+
+  try {
+    const solrRes = await fetch(
+      `http://localhost:8983/solr/football_core/select?q=${query}&spellcheck=true&spellcheck.q=${query}&wt=json`
+    );
+
+    const data = await solrRes.json();
+
+    res.json({
+      results: data.response.docs,
+      spellcheck: data.spellcheck
+    });
+  } catch (err) {
+    res.status(500).json({ error: "Search failed" });
+  }
 });
 
 app.listen(port, () => console.log(`Backend running on port ${port}`));
