@@ -47,3 +47,4 @@ cd SC4021-Information-Retrieval
 ```bash
 docker-compose up -d --build
 
+4. open application on http://localhost:5173
