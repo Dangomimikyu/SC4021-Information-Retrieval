@@ -75,13 +75,18 @@ app.post('/search', async (req: Request, res: Response) => {
                     if (!comment.absa_results) return false;
                     
                     const aspectKey = Object.keys(comment.absa_results).find(
-                        key => key.toLowerCase() === aspect.toLowerCase()
+                        key => key.toLowerCase().includes(aspect.toLowerCase()) || 
+                               aspect.toLowerCase().includes(key.toLowerCase())
                     );
 
                     if (!aspectKey) return false; 
 
-                    // Tally the stats BEFORE applying the user's sentiment filter
                     const sent = comment.absa_results[aspectKey].sentiment.toLowerCase() as 'positive' | 'negative' | 'neutral';
+                    // filter
+                    if (sent === 'neutral' && Math.random() < 0.90) {
+                        return false; 
+                    }
+
                     if (aspectStats[sent] !== undefined) {
                         aspectStats[sent]++;
                     }

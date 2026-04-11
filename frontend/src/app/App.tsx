@@ -35,6 +35,7 @@ export default function App() {
   // NEW: ABSA Filter States
   const [aspect, setAspect] = useState('');
   const [aspectSentiment, setAspectSentiment] = useState('');
+  const [timeRange, setTimeRange] = useState('all');
 
   const [posts, setPosts] = useState<RedditPost[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -45,6 +46,16 @@ export default function App() {
     setError(null);
     setHasSearched(true);
 
+    let finalStartDate = startDate; 
+    
+    if (!finalStartDate && timeRange !== 'all') {
+      const d = new Date();
+      if (timeRange === '3months') d.setMonth(d.getMonth() - 3);
+      else if (timeRange === '9months') d.setMonth(d.getMonth() - 9);
+      else if (timeRange === '12months') d.setFullYear(d.getFullYear() - 1);
+      finalStartDate = d.toISOString().split('T')[0];
+    }
+
     try {
       const response = await fetch('http://localhost:8000/search', {
         method: 'POST',
@@ -53,7 +64,7 @@ export default function App() {
           query: queryOverride || searchQuery,
           sentiment: sentiment || null,
           source: source || null,
-          start_date: startDate || null,
+          start_date: finalStartDate || null,
           end_date: endDate || null,
           comment_type: commentType || null,
           aspect: aspect || null,
@@ -129,6 +140,19 @@ export default function App() {
             onToggleAdvanced={() => setShowAdvanced(!showAdvanced)}
             onSearch={handleSearch}
           />
+
+          <div className="flex justify-center mt-4 mb-6">
+            <select
+              value={timeRange}
+              onChange={(e) => setTimeRange(e.target.value)}
+              className="border border-gray-300 dark:border-gray-600 px-4 py-2 rounded-full bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer text-sm font-medium transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
+            >
+              <option value="all">All Time</option>
+              <option value="3months">Past 3 Months</option>
+              <option value="9months">Past 9 Months</option>
+              <option value="12months">Past 12 Months</option>
+            </select>
+          </div>
 
           {!hasSearched && (
             <SuggestionPills
