@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<schema name="football-ir-schema" version="1.6">
+    <fieldType name="string" class="solr.StrField" sortMissingLast="true" docValues="true" />
+    <fieldType name="pdate" class="solr.DatePointField" docValues="true" />
+    <fieldType name="pint" class="solr.IntPointField" docValues="true" />
+    <fieldType name="pfloat" class="solr.FloatPointField" docValues="true" />
+    <fieldType name="boolean" class="solr.BoolField" docValues="true" />
+
+    <fieldType name="preprocess_text" class="solr.TextField" positionIncrementGap="100">
+        <analyzer type="index">
+            <tokenizer name="whitespace" />
+            <filter name="lowercase" />
+            <filter name="stop" ignoreCase="true" words="stopwords.txt" />
+            <filter name="snowballPorter" language="English"/>
+            <filter name="synonymGraph" synonyms="synonyms.txt"/>
+            <filter name="flattenGraph"/>
+        </analyzer>
+        <analyzer type="query">
+            <tokenizer name="whitespace" />
+            <filter name="lowercase" />
+            <filter name="stop" ignoreCase="true" words="stopwords.txt" />
+            <filter name="synonymGraph" synonyms="synonyms.txt"/>
+            <filter name="snowballPorter" language="English"/>
+        </analyzer>
+    </fieldType>
+
+    <field name="id" type="string" indexed="true" stored="true" required="true"/>
+    <field name="title" type="preprocess_text" indexed="true" stored="true" />
+    <field name="author" type="string" indexed="true" stored="true" />
+    <field name="content" type="preprocess_text" indexed="true" stored="true" />
+    <field name="subreddit" type="string" indexed="true" stored="true"/>
+    <field name="upvotes" type="pint" indexed="true" stored="true" />
+    <field name="num_comments" type="pint" indexed="true" stored="true" />
+    <field name="datetime" type="pdate" indexed="true" stored="true" />
+    <field name="comments_raw" type="preprocess_text" indexed="true" stored="true" />
+    <field name="comments_scored" type="string" indexed="false" stored="true" docValues="false" />
+    
+    <field name="sentiment_label" type="string" indexed="true" stored="true" />
+
+    <uniqueKey>id</uniqueKey>
+
+    <field name="text" type="preprocess_text" indexed="true" stored="false" multiValued="true"/>
+    <copyField source="title" dest="text"/>
+    <copyField source="content" dest="text"/>
+    <copyField source="comments_raw" dest="text"/>
+
+</schema>

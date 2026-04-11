@@ -8,7 +8,7 @@ __pycache__/
 
 # Distribution / packaging
 .Python
-build/
+
 develop-eggs/
 dist/
 downloads/
@@ -210,3 +210,7 @@ node_modules/
 frontend/node_modules/
 venv/
 .env
+
+# Custom ignores for this project
+classification/isaac_model/
+indexing/dataset/football_index_scored.json

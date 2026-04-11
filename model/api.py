@@ -5,6 +5,7 @@ from typing import List, Optional, Dict, Any
 import pandas as pd
 from datetime import datetime
 import json
+import requests
 
 from opinion_pipeline import OpinionSearchPipeline
 
@@ -129,6 +130,25 @@ async def search_opinions(request: SearchRequest):
             detail="No data analyzed yet. Please call /analyze first."
         )
     
+    # solr spell checking
+
+    solr_spellcheck = {}
+    if request.query:
+        try:
+            solr_res = requests.get(
+                "http://localhost:8983/solr/football_core/select",
+                params={
+                    "q": request.query,
+                    "wt": "json",
+                    "spellcheck": "true",
+                    "spellcheck.q": request.query
+                }
+            )
+            solr_data = solr_res.json()
+            solr_spellcheck = solr_data.get("spellcheck", {})
+        except Exception as e:
+            print("Solr error:", e)
+
     # Search
     results = pipeline.search_opinions(
         opinions_df,
@@ -162,7 +182,8 @@ async def search_opinions(request: SearchRequest):
     return {
         "total_results": len(results),
         "query": request.dict(),
-        "opinions": opinions
+        "opinions": opinions,
+        "spellcheck": solr_spellcheck
     }
 
 @app.get("/topics")
