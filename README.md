@@ -45,5 +45,5 @@ cd SC4021-Information-Retrieval
 ```
 3. **Build and run the containers**
 ```bash
-docker-compose up --build
+docker-compose up -d --build
 
