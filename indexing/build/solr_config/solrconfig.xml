@@ -13,12 +13,32 @@
     
     <schemaFactory class="ClassicIndexSchemaFactory"/>
 
+    <searchComponent name="spellcheck" class="solr.SpellCheckComponent">
+        <lst name="spellchecker">
+            <str name="name">default</str>
+            <str name="field">text</str>
+            <str name="classname">solr.DirectSolrSpellChecker</str>
+            <str name="distanceMeasure">internal</str>
+            <float name="accuracy">0.5</float>
+            <int name="maxEdits">2</int>
+            <int name="minPrefix">1</int>
+            <int name="maxInspections">5</int>
+            <int name="minQueryLength">4</int>
+            <float name="maxQueryFrequency">0.01</float>
+        </lst>
+    </searchComponent>
+
     <requestHandler name="/select" class="solr.SearchHandler">
         <lst name="defaults">
             <str name="echoParams">explicit</str>
             <int name="rows">10</int>
             <str name="df">text</str> 
+            <str name="spellcheck.dictionary">default</str>
+            <str name="spellcheck.count">5</str>
         </lst>
+        <arr name="last-components">
+            <str>spellcheck</str>
+        </arr>
     </requestHandler>
 
     <requestHandler name="/update" class="solr.UpdateRequestHandler"/>
